@@ -52,6 +52,9 @@ export default function App() {
     }));
   };
 
+    const nextSol = () => {
+    setSol(prev => (prev < 10 ? prev + 1 : prev));
+  };
   const triggerStorm = () => {
     setSolarStorm(true);
     setTimeout(() => setSolarStorm(false), 15000); // Storm lasts 15 seconds for demo
@@ -64,7 +67,7 @@ export default function App() {
           <Sun size={32} /> Simulador Base Marciana
         </h1>
         <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
-          Sol {sol}
+          Sol {sol} / 10
         </div>
       </header>
 
@@ -108,6 +111,14 @@ export default function App() {
         ))}
       </div>
 
+            <div style={{ textAlign: 'center', marginTop: '25px' }}>
+        <button
+          onClick={nextSol}
+          disabled={sol >= 10}
+          style={{ padding: '15px 30px', fontSize: '20px', fontWeight: 'bold', backgroundColor: sol >= 10 ? '#7f8c8d' : '#e67e22', color: 'white', border: 'none', borderRadius: '8px', cursor: sol >= 10 ? 'not-allowed' : 'pointer' }}>
+          Siguiente Sol ➜
+        </button>
+      </div>
       <style dangerouslySetInnerHTML={{__html: `
         .group:hover .tooltip-text { visibility: visible !important; opacity: 1 !important; }
       `}} />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Power, Wind, Sprout, Shield, Sun, Info } from 'lucide-react';
+import { DONKI_SOLS, DONKI_SOURCE } from './donki.js';
 
 const Tooltip = ({ children, text }) => (
   <div style={{ position: 'relative', display: 'inline-block', cursor: 'help' }} className="group">
@@ -14,9 +15,6 @@ const Tooltip = ({ children, text }) => (
     </div>
   </div>
 );
-
-// Soles con tormenta solar. DATOS DE PRUEBA: se reemplazaran por eventos reales de NASA DONKI.
-const STORM_SOLS = [3, 7];
 
 export default function App() {
   const [sol, setSol] = useState(1);
@@ -34,7 +32,8 @@ export default function App() {
   const [endReason, setEndReason] = useState('');
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
-  const solarStorm = STORM_SOLS.includes(sol);
+  const solData = DONKI_SOLS[sol - 1];
+  const solarStorm = solData.marsCMEs > 0;
   const stormDanger = solarStorm && !systems.shields.active;
 
   useEffect(() => {
@@ -44,14 +43,14 @@ export default function App() {
     } else {
       setBlackout(false);
       if (solarStorm && !systems.shields.active) {
-        setMessage("☀️ ¡Alerta de tormenta solar en este Sol! Encendé los escudos antes de avanzar (apagá Agricultura para no superar los 100 kW).");
+        setMessage(`☀️ ¡Alerta de tormenta solar! Datos reales de NASA DONKI: ${solData.marsCMEs} ${solData.marsCMEs === 1 ? 'eyección' : 'eyecciones'} de masa coronal con llegada estimada a Marte este día. Encendé los escudos antes de avanzar (apagá Agricultura para no superar los 100 kW).`);
       } else if (solarStorm && systems.shields.active) {
         setMessage("🛡️ Tormenta solar en este Sol: escudos encendidos. La tripulación está protegida.");
       } else {
         setMessage("Sistemas operando dentro de los parámetros normales.");
       }
     }
-  }, [currentLoad, solarStorm, systems.shields.active]);
+  }, [currentLoad, solarStorm, systems.shields.active, sol]);
 
   const toggleSystem = (key) => {
     setSystems(prev => ({
@@ -134,6 +133,7 @@ export default function App() {
         </h1>
         <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
           Sol {sol} / 10
+          <div style={{ fontSize: '13px', fontWeight: 'normal', color: '#bdc3c7' }}>{solData.label}</div>
         </div>
       </header>
 
@@ -207,6 +207,12 @@ export default function App() {
           </button>
         </div>
       )}
+
+      <p style={{ marginTop: '25px', fontSize: '12px', color: '#95a5a6', lineHeight: 1.5 }}>
+        Tormentas solares: datos reales de <a href={DONKI_SOURCE.page} target="_blank" rel="noreferrer" style={{ color: '#5dade2' }}>{DONKI_SOURCE.name}</a> ({DONKI_SOURCE.period}).
+        Cada Sol corresponde a un día de ese período; las llegadas a Marte son estimaciones del modelo WSA-ENLIL, no mediciones.
+        Consumos de energía y daños a la salud y las raciones son valores simplificados para el juego.
+      </p>
 
       <style dangerouslySetInnerHTML={{__html: `
         .group:hover .tooltip-text { visibility: visible !important; opacity: 1 !important; }

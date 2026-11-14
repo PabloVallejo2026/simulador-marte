@@ -26,6 +26,8 @@ export default function App() {
   const [solarStorm, setSolarStorm] = useState(false);
   const [message, setMessage] = useState("Día tranquilo en Marte. Gestiona la energía sabiamente.");
   const [blackout, setBlackout] = useState(false);
+    const [health, setHealth] = useState(100);
+  const [rations, setRations] = useState(100);
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
 
@@ -89,6 +91,16 @@ export default function App() {
         </button>
       </div>
 
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+        <div style={{ flex: 1, backgroundColor: '#2c3e50', padding: '15px', borderRadius: '8px' }}>
+          <h2 style={{ margin: '0 0 10px 0', color: '#ecf0f1', fontSize: '20px' }}>❤️ Salud de la tripulación</h2>
+          <div style={{ fontSize: '28px', fontWeight: 'bold', color: health > 30 ? '#2ecc71' : '#e74c3c' }}>{health} %</div>
+        </div>
+        <div style={{ flex: 1, backgroundColor: '#2c3e50', padding: '15px', borderRadius: '8px' }}>
+          <h2 style={{ margin: '0 0 10px 0', color: '#ecf0f1', fontSize: '20px' }}>🍽️ Raciones de comida</h2>
+          <div style={{ fontSize: '28px', fontWeight: 'bold', color: rations > 30 ? '#2ecc71' : '#e74c3c' }}>{rations} %</div>
+        </div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
         {Object.entries(systems).map(([key, sys]) => (
           <div key={key} style={{ backgroundColor: '#34495e', padding: '20px', borderRadius: '8px', border: `2px solid ${sys.active ? '#2ecc71' : '#7f8c8d'}` }}>

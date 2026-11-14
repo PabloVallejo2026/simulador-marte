@@ -54,8 +54,18 @@ export default function App() {
     }));
   };
 
-    const nextSol = () => {
-    setSol(prev => (prev < 10 ? prev + 1 : prev));
+     const nextSol = () => {
+    if (sol >= 10) return;
+    // Efectos por Sol segun Reglas v2 (valores simplificados de juego)
+    if (!systems.lifeSupport.active) {
+      setHealth(prev => Math.max(0, prev - 50));
+    }
+    if (systems.agriculture.active) {
+      setRations(prev => Math.min(100, prev + 10));
+    } else {
+      setRations(prev => Math.max(0, prev - 20));
+    }
+    setSol(prev => prev + 1);
   };
   const triggerStorm = () => {
     setSolarStorm(true);

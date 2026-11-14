@@ -15,6 +15,9 @@ const Tooltip = ({ children, text }) => (
   </div>
 );
 
+// Soles con tormenta solar. DATOS DE PRUEBA: se reemplazaran por eventos reales de NASA DONKI.
+const STORM_SOLS = [3, 7];
+
 export default function App() {
   const [sol, setSol] = useState(1);
   const [energyMax] = useState(100);
@@ -23,7 +26,6 @@ export default function App() {
     agriculture: { name: 'Módulo Agrícola', cost: 50, active: true, icon: Sprout, desc: 'Cultivos hidropónicos. Si se apaga, las plantas se congelan.' },
     shields: { name: 'Escudos Anti-Radiación', cost: 60, active: false, icon: Shield, desc: 'Bloquea la radiación de tormentas solares.' }
   });
-  const [solarStorm, setSolarStorm] = useState(false);
   const [message, setMessage] = useState("Día tranquilo en Marte. Gestiona la energía sabiamente.");
   const [blackout, setBlackout] = useState(false);
   const [health, setHealth] = useState(100);
@@ -32,6 +34,8 @@ export default function App() {
   const [endReason, setEndReason] = useState('');
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
+  const solarStorm = STORM_SOLS.includes(sol);
+  const stormDanger = solarStorm && !systems.shields.active;
 
   useEffect(() => {
     if (currentLoad > energyMax) {
@@ -40,9 +44,9 @@ export default function App() {
     } else {
       setBlackout(false);
       if (solarStorm && !systems.shields.active) {
-        setMessage("¡PELIGRO! Tormenta solar activa. Niveles de radiación críticos. ¡Enciende los escudos!");
+        setMessage("☀️ ¡Alerta de tormenta solar en este Sol! Encendé los escudos antes de avanzar (apagá Agricultura para no superar los 100 kW).");
       } else if (solarStorm && systems.shields.active) {
-        setMessage("Tormenta solar contenida. Escudos operando al máximo.");
+        setMessage("🛡️ Tormenta solar en este Sol: escudos encendidos. La tripulación está protegida.");
       } else {
         setMessage("Sistemas operando dentro de los parámetros normales.");
       }
@@ -77,13 +81,20 @@ export default function App() {
     } else {
       newRations = Math.max(0, newRations - 20);
     }
+    // Tormenta solar: sin escudos, la radiacion baja la salud 40 % (valor simplificado de juego)
+    const radiationHit = solarStorm && !systems.shields.active;
+    if (radiationHit) {
+      newHealth = Math.max(0, newHealth - 40);
+    }
     setHealth(newHealth);
     setRations(newRations);
 
     // 3. Derrota por salud o raciones en 0 %
     if (newHealth <= 0) {
       setGameStatus('lost');
-      setEndReason('La salud de la tripulación llegó a 0 %. Sin Soporte Vital no hay oxígeno.');
+      setEndReason(radiationHit
+        ? 'La salud de la tripulación llegó a 0 %. La radiación de la tormenta solar entró en la base sin escudos.'
+        : 'La salud de la tripulación llegó a 0 %. Sin Soporte Vital no hay oxígeno.');
       return;
     }
     if (newRations <= 0) {
@@ -111,14 +122,8 @@ export default function App() {
       agriculture: { ...prev.agriculture, active: true },
       shields: { ...prev.shields, active: false }
     }));
-    setSolarStorm(false);
     setGameStatus('playing');
     setEndReason('');
-  };
-
-  const triggerStorm = () => {
-    setSolarStorm(true);
-    setTimeout(() => setSolarStorm(false), 15000); // Storm lasts 15 seconds for demo
   };
 
   return (
@@ -132,7 +137,7 @@ export default function App() {
         </div>
       </header>
 
-      <div style={{ backgroundColor: blackout ? '#ffcccc' : '#f8f9fa', color: '#333', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: `5px solid ${blackout ? 'red' : '#3498db'}` }}>
+      <div style={{ backgroundColor: (blackout || stormDanger) ? '#ffcccc' : '#f8f9fa', color: '#333', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: `5px solid ${(blackout || stormDanger) ? 'red' : '#3498db'}` }}>
         <p style={{ margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Info size={20} /> {message}
         </p>
@@ -145,9 +150,9 @@ export default function App() {
             {currentLoad} / {energyMax} kW
           </div>
         </div>
-        <button onClick={triggerStorm} disabled={solarStorm} style={{ padding: '10px 20px', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '5px', cursor: solarStorm ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-          {solarStorm ? 'Tormenta en progreso...' : 'Simular Alerta DONKI (CME)'}
-        </button>
+        <div style={{ padding: '10px 20px', backgroundColor: solarStorm ? '#e67e22' : '#34495e', color: 'white', borderRadius: '5px', fontWeight: 'bold', alignSelf: 'center' }}>
+          {solarStorm ? '☀️ Tormenta solar' : 'Sin tormenta solar'}
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>

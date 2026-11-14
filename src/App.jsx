@@ -26,15 +26,17 @@ export default function App() {
   const [solarStorm, setSolarStorm] = useState(false);
   const [message, setMessage] = useState("Día tranquilo en Marte. Gestiona la energía sabiamente.");
   const [blackout, setBlackout] = useState(false);
-    const [health, setHealth] = useState(100);
+  const [health, setHealth] = useState(100);
   const [rations, setRations] = useState(100);
+  const [gameStatus, setGameStatus] = useState('playing');
+  const [endReason, setEndReason] = useState('');
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
 
   useEffect(() => {
     if (currentLoad > energyMax) {
       setBlackout(true);
-      setMessage("¡APAGÓN GENERAL! Consumo excesivo. Apaga sistemas inmediatamente.");
+      setMessage("⚠️ ¡Sobrecarga! La base supera los 100 kW. Si avanzás al siguiente Sol habrá un apagón general.");
     } else {
       setBlackout(false);
       if (solarStorm && !systems.shields.active) {
@@ -54,19 +56,66 @@ export default function App() {
     }));
   };
 
-     const nextSol = () => {
-    if (sol >= 10) return;
-    // Efectos por Sol segun Reglas v2 (valores simplificados de juego)
+  const nextSol = () => {
+    if (gameStatus !== 'playing') return;
+
+    // 1. Apagon: avanzar con mas de 100 kW es derrota (opcion A)
+    if (currentLoad > energyMax) {
+      setGameStatus('lost');
+      setEndReason('¡Apagón general! La base consumió más de 100 kW y el generador se apagó.');
+      return;
+    }
+
+    // 2. Efectos por Sol segun Reglas v2 (valores simplificados de juego)
+    let newHealth = health;
+    let newRations = rations;
     if (!systems.lifeSupport.active) {
-      setHealth(prev => Math.max(0, prev - 50));
+      newHealth = Math.max(0, newHealth - 50);
     }
     if (systems.agriculture.active) {
-      setRations(prev => Math.min(100, prev + 10));
+      newRations = Math.min(100, newRations + 10);
     } else {
-      setRations(prev => Math.max(0, prev - 20));
+      newRations = Math.max(0, newRations - 20);
     }
-    setSol(prev => prev + 1);
+    setHealth(newHealth);
+    setRations(newRations);
+
+    // 3. Derrota por salud o raciones en 0 %
+    if (newHealth <= 0) {
+      setGameStatus('lost');
+      setEndReason('La salud de la tripulación llegó a 0 %. Sin Soporte Vital no hay oxígeno.');
+      return;
+    }
+    if (newRations <= 0) {
+      setGameStatus('lost');
+      setEndReason('Las raciones llegaron a 0 %. Sin el Módulo Agrícola no hay comida.');
+      return;
+    }
+
+    // 4. Victoria al completar el Sol 10
+    if (sol >= 10) {
+      setGameStatus('won');
+      setEndReason('¡Misión cumplida! La tripulación sobrevivió 10 soles en Marte.');
+      return;
+    }
+    setSol(sol + 1);
   };
+
+  const restartMission = () => {
+    setSol(1);
+    setHealth(100);
+    setRations(100);
+    setSystems(prev => ({
+      ...prev,
+      lifeSupport: { ...prev.lifeSupport, active: true },
+      agriculture: { ...prev.agriculture, active: true },
+      shields: { ...prev.shields, active: false }
+    }));
+    setSolarStorm(false);
+    setGameStatus('playing');
+    setEndReason('');
+  };
+
   const triggerStorm = () => {
     setSolarStorm(true);
     setTimeout(() => setSolarStorm(false), 15000); // Storm lasts 15 seconds for demo
@@ -101,7 +150,7 @@ export default function App() {
         </button>
       </div>
 
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
         <div style={{ flex: 1, backgroundColor: '#2c3e50', padding: '15px', borderRadius: '8px' }}>
           <h2 style={{ margin: '0 0 10px 0', color: '#ecf0f1', fontSize: '20px' }}>❤️ Salud de la tripulación</h2>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: health > 30 ? '#2ecc71' : '#e74c3c' }}>{health} %</div>
@@ -111,6 +160,7 @@ export default function App() {
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: rations > 30 ? '#2ecc71' : '#e74c3c' }}>{rations} %</div>
         </div>
       </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
         {Object.entries(systems).map(([key, sys]) => (
           <div key={key} style={{ backgroundColor: '#34495e', padding: '20px', borderRadius: '8px', border: `2px solid ${sys.active ? '#2ecc71' : '#7f8c8d'}` }}>
@@ -133,14 +183,26 @@ export default function App() {
         ))}
       </div>
 
-            <div style={{ textAlign: 'center', marginTop: '25px' }}>
-        <button
-          onClick={nextSol}
-          disabled={sol >= 10}
-          style={{ padding: '15px 30px', fontSize: '20px', fontWeight: 'bold', backgroundColor: sol >= 10 ? '#7f8c8d' : '#e67e22', color: 'white', border: 'none', borderRadius: '8px', cursor: sol >= 10 ? 'not-allowed' : 'pointer' }}>
-          Siguiente Sol ➜
-        </button>
-      </div>
+      {gameStatus === 'playing' ? (
+        <div style={{ textAlign: 'center', marginTop: '25px' }}>
+          <button
+            onClick={nextSol}
+            style={{ padding: '15px 30px', fontSize: '20px', fontWeight: 'bold', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            {sol >= 10 ? 'Terminar misión ➜' : 'Siguiente Sol ➜'}
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginTop: '25px', padding: '25px', borderRadius: '8px', textAlign: 'center', backgroundColor: gameStatus === 'won' ? '#1e8449' : '#922b21' }}>
+          <h2 style={{ margin: '0 0 10px 0' }}>{gameStatus === 'won' ? '🏆 ¡Victoria!' : '💥 Misión fallida'}</h2>
+          <p style={{ fontSize: '18px', margin: '0 0 20px 0' }}>{endReason}</p>
+          <button
+            onClick={restartMission}
+            style={{ padding: '12px 25px', fontSize: '18px', fontWeight: 'bold', backgroundColor: '#ecf0f1', color: '#2c3e50', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            🔄 Reiniciar misión
+          </button>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{__html: `
         .group:hover .tooltip-text { visibility: visible !important; opacity: 1 !important; }
       `}} />

@@ -11,7 +11,7 @@ export default function App() {
     agriculture: { name: 'Módulo Agrícola', cost: 50, active: true, icon: Sprout, desc: 'Cultivos hidropónicos que producen la comida. Si se apaga, las plantas se congelan.' },
     shields: { name: 'Escudos Anti-Radiación', cost: 60, active: false, icon: Shield, desc: 'Protegen a la tripulación de la radiación de las tormentas solares. Consumen mucha energía.' }
   });
-  const [message, setMessage] = useState("Día tranquilo en Marte. Gestiona la energía sabiamente.");
+  const [message, setMessage] = useState('normal');
   const [blackout, setBlackout] = useState(false);
   const [health, setHealth] = useState(100);
   const [rations, setRations] = useState(100);
@@ -22,9 +22,8 @@ export default function App() {
   const [openInfo, setOpenInfo] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
   const [report, setReport] = useState(null);
-  const lang = 'es'; // preparado para el selector Español / English
+  const [lang, setLang] = useState('es');
   const T = TEXTOS[lang];
-  const [endReason, setEndReason] = useState('');
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
   const solData = DONKI_SOLS[sol - 1];
@@ -34,15 +33,15 @@ export default function App() {
   useEffect(() => {
     if (currentLoad > energyMax) {
       setBlackout(true);
-      setMessage("¡Sobrecarga! La base supera los 100 kW. Si avanzás al siguiente Sol habrá un apagón general.");
+      setMessage('overload');
     } else {
       setBlackout(false);
       if (solarStorm && !systems.shields.active) {
         setMessage('storm');
       } else if (solarStorm && systems.shields.active) {
-        setMessage("Tormenta solar hoy: los escudos están encendidos. La tripulación está protegida.");
+        setMessage('stormProtected');
       } else {
-        setMessage("Sistemas operando dentro de los parámetros normales.");
+        setMessage('normal');
       }
     }
   }, [currentLoad, solarStorm, systems.shields.active, sol]);
@@ -63,7 +62,6 @@ export default function App() {
     if (currentLoad > energyMax) {
       setGameStatus('lost');
       setEndKind('blackout');
-      setEndReason('¡Apagón general! La base consumió más de 100 kW y el generador se apagó.');
       return;
     }
 
@@ -88,22 +86,22 @@ export default function App() {
     setRations(newRations);
 
     // Reporte del Sol: usa los cambios realmente calculados arriba
-    const change = (label, d) => d === 0 ? `${label}: ${T.noChange}` : `${label} ${d > 0 ? '+' : ''}${d} %`;
+    // Se guardan claves y numeros; el texto se arma al mostrarlo, en el idioma elegido
     const items = [];
     if (solarStorm) {
       items.push(systems.shields.active
-        ? { icon: '🛡️', text: T.stormShields, change: T.noRadiationDamage }
-        : { icon: '☢️', text: T.stormNoShields, change: change(T.health, newHealth - healthAfterLifeSupport) });
+        ? { icon: '🛡️', text: 'stormShields', special: 'noRadiationDamage' }
+        : { icon: '☢️', text: 'stormNoShields', res: 'health', d: newHealth - healthAfterLifeSupport });
     } else {
-      items.push({ icon: '🌤️', text: T.calmDay, change: '' });
+      items.push({ icon: '🌤️', text: 'calmDay' });
     }
     if (!systems.lifeSupport.active) {
-      items.push({ icon: '💨', text: T.lifeSupportOff, change: change(T.health, healthAfterLifeSupport - health) });
+      items.push({ icon: '💨', text: 'lifeSupportOff', res: 'health', d: healthAfterLifeSupport - health });
     }
     items.push(systems.agriculture.active
-      ? { icon: '🌱', text: T.agricultureOn, change: change(T.food, newRations - rations) }
-      : { icon: '🥀', text: T.agricultureOff, change: change(T.food, newRations - rations) });
-    setReport({ sol, label: solData.label, items });
+      ? { icon: '🌱', text: 'agricultureOn', res: 'food', d: newRations - rations }
+      : { icon: '🥀', text: 'agricultureOff', res: 'food', d: newRations - rations });
+    setReport({ sol, items });
 
     // Registro de decisiones para el informe final (solo datos reales de la partida)
     setLog([...log, {
@@ -117,15 +115,11 @@ export default function App() {
     if (newHealth <= 0) {
       setGameStatus('lost');
       setEndKind(radiationHit ? 'radiation' : 'oxygen');
-      setEndReason(radiationHit
-        ? 'La salud de la tripulación llegó a 0 %. La radiación de la tormenta solar entró en la base sin escudos.'
-        : 'La salud de la tripulación llegó a 0 %. Sin Soporte Vital no hay oxígeno.');
       return;
     }
     if (newRations <= 0) {
       setGameStatus('lost');
       setEndKind('food');
-      setEndReason('Las raciones llegaron a 0 %. Sin el Módulo Agrícola no hay comida.');
       return;
     }
 
@@ -133,7 +127,6 @@ export default function App() {
     if (sol >= 10) {
       setGameStatus('won');
       setEndKind('won');
-      setEndReason('¡Misión cumplida! La tripulación sobrevivió 10 soles en Marte.');
       return;
     }
     setSol(sol + 1);
@@ -150,7 +143,6 @@ export default function App() {
       shields: { ...prev.shields, active: false }
     }));
     setGameStatus('playing');
-    setEndReason('');
     setReport(null);
     setLog([]);
     setEndKind('');
@@ -164,12 +156,29 @@ export default function App() {
     unprotected: log.filter(e => e.storm && !e.shields).length,
     agriOff: log.filter(e => e.agricultureOff).length
   };
+  const endReason = { won: T.reasonWon, food: T.reasonFood, radiation: T.reasonRadiation, oxygen: T.reasonOxygen, blackout: T.reasonBlackout }[endKind];
+  const messageText = { overload: T.msgOverload, stormProtected: T.msgStormProtected, normal: T.msgNormal }[message];
+  const modNames = { lifeSupport: T.modLifeSupport, agriculture: T.modAgriculture, shields: T.modShields };
+  const modDescs = { lifeSupport: T.descLifeSupport, agriculture: T.descAgriculture, shields: T.descShields };
+  const dateLabel = (n) => {
+    const d = DONKI_SOLS[n - 1];
+    return lang === 'es' ? d.label : new Date(d.date + 'T12:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  };
+  const changeText = (it) => {
+    if (it.special) return T[it.special];
+    if (!it.res) return '';
+    const label = it.res === 'health' ? T.health : T.food;
+    return it.d === 0 ? `${label}: ${T.noChange}` : `${label} ${it.d > 0 ? '+' : ''}${it.d} %`;
+  };
+  const langToggle = (
+    <button className="lang-btn" onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>🌐 {T.langButton}</button>
+  );
   const strategy = { won: T.stratWin, food: T.stratFood, radiation: T.stratRadiation, oxygen: T.stratOxygen, blackout: T.stratBlackout }[endKind];
   const alertLevel = (blackout || stormDanger) ? 'danger' : (solarStorm ? 'storm' : 'ok');
   const alertColors = {
-    danger: { bg: '#fdecea', border: '#c0392b', title: '¡Atención!' },
-    storm: { bg: '#fff4d6', border: '#e67e22', title: 'Alerta de clima espacial (datos de NASA)' },
-    ok: { bg: '#fff8e7', border: '#d4a017', title: 'Centro de control' }
+    danger: { bg: '#fdecea', border: '#c0392b', title: T.alertDanger },
+    storm: { bg: '#fff4d6', border: '#e67e22', title: T.alertStorm },
+    ok: { bg: '#fff8e7', border: '#d4a017', title: T.alertOk }
   }[alertLevel];
 
   const Bar = ({ icon, label, value, max, color, text }) => (
@@ -186,6 +195,7 @@ export default function App() {
     return (
       <div className="mars-bg">
         <div className="intro">
+          <div style={{ textAlign: 'right' }}>{langToggle}</div>
           <h1>{T.introTitle}</h1>
           <p className="intro-question">{T.introQuestion}</p>
           <p>{T.introText}</p>
@@ -203,6 +213,7 @@ export default function App() {
           .intro-question { font-size: 20px !important; font-weight: 800; }
           .intro-goal { font-weight: 800; }
           .intro-phrase { font-weight: 800; color: #c0392b; font-size: 19px !important; }
+          .lang-btn { background: #2c3e50; color: #fff; border: 2px solid #fff; border-radius: 8px; font-weight: 800; font-size: 15px; padding: 6px 12px; cursor: pointer; }
           .next-btn { margin-top: 10px; background: #f39c12; border: 3px solid #2c3e50; border-radius: 12px; color: #fff; font-size: 24px; font-weight: 900; padding: 12px 22px; cursor: pointer; text-shadow: 1px 1px 2px #000; }
         `}</style>
       </div>
@@ -214,7 +225,10 @@ export default function App() {
       <div className="game">
         <div className="top">
           <div className="top-left">
-            <div className="title-tag">Misión Marte: <span>Base de Supervivencia</span></div>
+            <div className="title-row">
+              <div className="title-tag">{T.titleMain} <span>{T.titleSub}</span></div>
+              {langToggle}
+            </div>
             <div className="alert-box" style={{ backgroundColor: alertColors.bg, borderColor: alertColors.border }}>
               <div className="alert-title">
                 {alertLevel === 'ok' ? <Info size={20} /> : <AlertTriangle size={20} color={alertColors.border} />}
@@ -227,36 +241,36 @@ export default function App() {
                   <p>☢️ {T.stormOptionNoShields}</p>
                 </div>
               ) : (
-                <p>{message}</p>
+                <p>{messageText}</p>
               )}
             </div>
           </div>
 
           <div className="bars">
-            <Bar icon={<Zap size={22} />} label="Energía" value={currentLoad} max={energyMax}
-              color={loadOver ? '#c0392b' : '#27ae60'} text={`ENERGÍA: ${currentLoad} / ${energyMax} kW${loadOver ? ' ¡SOBRECARGA!' : ''}`} />
-            <Bar icon={<Heart size={22} />} label="Salud" value={health} max={100}
-              color="#e74c3c" text={`SALUD: ${health} %`} />
-            <Bar icon={<Sprout size={22} />} label="Comida" value={rations} max={100}
-              color="#e67e22" text={`COMIDA: ${rations} %`} />
+            <Bar icon={<Zap size={22} />} value={currentLoad} max={energyMax}
+              color={loadOver ? '#c0392b' : '#27ae60'} text={`${T.barEnergy}: ${currentLoad} / ${energyMax} kW${loadOver ? ' ' + T.overload : ''}`} />
+            <Bar icon={<Heart size={22} />} value={health} max={100}
+              color="#e74c3c" text={`${T.barHealth}: ${health} %`} />
+            <Bar icon={<Sprout size={22} />} value={rations} max={100}
+              color="#e67e22" text={`${T.barFood}: ${rations} %`} />
           </div>
 
           <div className="sol-card">
             <div className="sol-num"><span>SOL</span> <Sun size={34} color="#f39c12" /></div>
             <div className="sol-big">{sol}/10</div>
-            <div className="sol-date">{solData.label}</div>
-            {solarStorm && <div className="storm-chip">☀️ Tormenta solar</div>}
+            <div className="sol-date">{dateLabel(sol)}</div>
+            {solarStorm && <div className="storm-chip">{T.stormChip}</div>}
           </div>
         </div>
 
         {report && (
           <div className="report">
-            <div className="report-title">📋 {T.reportTitle} {report.sol} · {report.label}</div>
+            <div className="report-title">📋 {T.reportTitle} {report.sol} · {dateLabel(report.sol)}</div>
             {report.items.map((it, i) => (
               <div key={i} className="report-item">
                 <span className="report-icon">{it.icon}</span>
-                <span className="report-text">{it.text}</span>
-                {it.change && <span className="report-change">{it.change}</span>}
+                <span className="report-text">{T[it.text]}</span>
+                {changeText(it) && <span className="report-change">{changeText(it)}</span>}
               </div>
             ))}
             <div className="report-note">{T.simplified}</div>
@@ -266,7 +280,7 @@ export default function App() {
         <div className="modules">
           {Object.entries(systems).map(([key, sys]) => (
             <div key={key} className="module">
-              <h3>{sys.name.toUpperCase()}</h3>
+              <h3>{modNames[key].toUpperCase()}</h3>
               <div className={`module-art art-${key}`}>
                 <sys.icon size={64} />
               </div>
@@ -276,13 +290,13 @@ export default function App() {
                   className={`state-btn ${sys.active ? 'on' : 'off'}`}
                   onClick={() => toggleSystem(key)}
                   disabled={gameStatus !== 'playing'}>
-                  {sys.active ? 'ENCENDIDO' : 'APAGADO'}
-                  <small>{sys.active ? 'Tocá para apagar' : 'Tocá para encender'}</small>
+                  {sys.active ? T.stateOn : T.stateOff}
+                  <small>{sys.active ? T.tapOff : T.tapOn}</small>
                 </button>
-                <button className="info-btn" aria-label={`Información sobre ${sys.name}`}
+                <button className="info-btn" aria-label={`${T.infoAbout} ${modNames[key]}`}
                   onClick={() => setOpenInfo(openInfo === key ? null : key)}>i</button>
               </div>
-              {openInfo === key && <div className="info-bubble">{sys.desc}</div>}
+              {openInfo === key && <div className="info-bubble">{modDescs[key]}</div>}
             </div>
           ))}
         </div>
@@ -290,15 +304,15 @@ export default function App() {
         {gameStatus === 'playing' ? (
           <div className="bottom">
             <button className="next-btn" onClick={nextSol}>
-              {sol >= 10 ? 'TERMINAR MISIÓN ➜' : 'AVANZAR AL SIGUIENTE SOL ➜'}
+              {sol >= 10 ? T.finishMission : T.nextSol}
             </button>
             <button className="credits-btn" onClick={() => setShowCredits(!showCredits)}>
-              Datos científicos / Créditos
+              {T.creditsButton}
             </button>
           </div>
         ) : (
           <div className="end-panel" style={{ backgroundColor: gameStatus === 'won' ? '#1e8449' : '#922b21' }}>
-            <h2>{gameStatus === 'won' ? '🏆 ¡Victoria!' : '💥 Misión fallida'}</h2>
+            <h2>{gameStatus === 'won' ? T.victory : T.missionFailed}</h2>
             <p className="end-title">{gameStatus === 'won' ? T.endWinTitle : T.endLoseTitle}</p>
             <p>{endReason}</p>
             <div className="final-report">
@@ -315,22 +329,21 @@ export default function App() {
               <p><strong>{T.learningTitle}:</strong> {T.learning}</p>
             </div>
             <div className="end-actions">
-              <button onClick={restartMission}>🔄 Reiniciar misión</button>
-              <button onClick={() => setShowCredits(!showCredits)}>Datos científicos / Créditos</button>
+              <button onClick={restartMission}>{T.restart}</button>
+              <button onClick={() => setShowCredits(!showCredits)}>{T.creditsButton}</button>
             </div>
           </div>
         )}
 
         {showCredits && (
           <div className="credits">
-            <h3>Datos científicos y créditos</h3>
+            <h3>{T.creditsTitle}</h3>
             <p>
-              Tormentas solares: datos reales de <a href={DONKI_SOURCE.page} target="_blank" rel="noreferrer">{DONKI_SOURCE.name}</a> ({DONKI_SOURCE.period}).
-              Cada Sol del juego corresponde a un día de ese período. Las llegadas a Marte de las eyecciones de masa coronal
-              son estimaciones del modelo WSA-ENLIL, no mediciones en Marte.
+              {T.creditsStorms} <a href={DONKI_SOURCE.page} target="_blank" rel="noreferrer">{DONKI_SOURCE.name}</a> ({T.creditsPeriod}).
+              {' '}{T.creditsModel}
             </p>
-            <p>Los consumos de energía y los daños a la salud y a las raciones son valores simplificados para el juego.</p>
-            <button onClick={() => setShowCredits(false)}>Cerrar</button>
+            <p>{T.creditsSimplified}</p>
+            <button onClick={() => setShowCredits(false)}>{T.close}</button>
           </div>
         )}
       </div>
@@ -339,6 +352,8 @@ export default function App() {
         .mars-bg { min-height: 100vh; background: linear-gradient(180deg, #e8916b 0%, #c8553d 45%, #8e3b2a 100%); padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
         .game { max-width: 1000px; margin: 0 auto; }
         .top { display: grid; grid-template-columns: 1.1fr 1.3fr 0.7fr; gap: 14px; align-items: start; }
+        .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+        .lang-btn { background: #2c3e50; color: #fff; border: 2px solid #fff; border-radius: 8px; font-weight: 800; font-size: 14px; padding: 6px 10px; cursor: pointer; white-space: nowrap; }
         .title-tag { background: #2c3e50; color: #fff; font-weight: 800; font-size: 20px; padding: 8px 14px; border-radius: 0 0 12px 0; margin-bottom: 10px; display: inline-block; }
         .title-tag span { font-size: 15px; font-weight: 600; }
         .alert-box { border: 4px solid; border-radius: 10px; padding: 10px 14px; box-shadow: 0 3px 0 rgba(0,0,0,0.2); }

@@ -16,6 +16,7 @@ export default function App() {
   const [health, setHealth] = useState(100);
   const [rations, setRations] = useState(100);
   const [gameStatus, setGameStatus] = useState('playing');
+  const [started, setStarted] = useState(false);
   const [openInfo, setOpenInfo] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
   const [report, setReport] = useState(null);
@@ -35,7 +36,7 @@ export default function App() {
     } else {
       setBlackout(false);
       if (solarStorm && !systems.shields.active) {
-        setMessage(`¡Hoy llega una tormenta solar! Datos reales de NASA DONKI: ${solData.marsCMEs} ${solData.marsCMEs === 1 ? 'eyección' : 'eyecciones'} de masa coronal con llegada estimada a Marte este día. Encendé los escudos antes de avanzar (apagá Agricultura para no superar los 100 kW).`);
+        setMessage('storm');
       } else if (solarStorm && systems.shields.active) {
         setMessage("Tormenta solar hoy: los escudos están encendidos. La tripulación está protegida.");
       } else {
@@ -43,6 +44,8 @@ export default function App() {
       }
     }
   }, [currentLoad, solarStorm, systems.shields.active, sol]);
+
+  const stormData = T.stormAlertData.replace('{n}', solData.marsCMEs).replace('{cme}', solData.marsCMEs === 1 ? T.cmeOne : T.cmeMany);
 
   const toggleSystem = (key) => {
     setSystems(prev => ({
@@ -155,6 +158,33 @@ export default function App() {
     </div>
   );
 
+  if (!started) {
+    return (
+      <div className="mars-bg">
+        <div className="intro">
+          <h1>{T.introTitle}</h1>
+          <p className="intro-question">{T.introQuestion}</p>
+          <p>{T.introText}</p>
+          <p>⚡ {T.introEnergy}</p>
+          <p>☀️ {T.introStorms}</p>
+          <p className="intro-goal">🎯 {T.introGoal}</p>
+          <p className="intro-phrase">{T.introPhrase}</p>
+          <button className="next-btn" onClick={() => setStarted(true)}>{T.startButton}</button>
+        </div>
+        <style>{`
+          .mars-bg { min-height: 100vh; background: linear-gradient(180deg, #e8916b 0%, #c8553d 45%, #8e3b2a 100%); padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
+          .intro { max-width: 720px; margin: 30px auto; background: #fdfefe; border: 4px solid #2c3e50; border-radius: 16px; padding: 24px; text-align: center; }
+          .intro h1 { color: #c0392b; font-size: 30px; margin: 0 0 8px; }
+          .intro p { font-size: 17px; line-height: 1.45; margin: 10px 0; }
+          .intro-question { font-size: 20px !important; font-weight: 800; }
+          .intro-goal { font-weight: 800; }
+          .intro-phrase { font-weight: 800; color: #c0392b; font-size: 19px !important; }
+          .next-btn { margin-top: 10px; background: #f39c12; border: 3px solid #2c3e50; border-radius: 12px; color: #fff; font-size: 24px; font-weight: 900; padding: 12px 22px; cursor: pointer; text-shadow: 1px 1px 2px #000; }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="mars-bg">
       <div className="game">
@@ -166,7 +196,15 @@ export default function App() {
                 {alertLevel === 'ok' ? <Info size={20} /> : <AlertTriangle size={20} color={alertColors.border} />}
                 {alertColors.title}
               </div>
-              <p>{message}</p>
+              {message === 'storm' ? (
+                <div className="storm-alert">
+                  <p><strong>{T.stormAlertTitle}</strong> {stormData}</p>
+                  <p>🛡️ {T.stormOptionShields}</p>
+                  <p>☢️ {T.stormOptionNoShields}</p>
+                </div>
+              ) : (
+                <p>{message}</p>
+              )}
             </div>
           </div>
 
@@ -267,6 +305,7 @@ export default function App() {
         .title-tag span { font-size: 15px; font-weight: 600; }
         .alert-box { border: 4px solid; border-radius: 10px; padding: 10px 14px; box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
         .alert-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
+        .storm-alert p { margin: 6px 0 0; }
         .alert-box p { margin: 6px 0 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
         .bars { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; }
         .bar-row { display: flex; align-items: center; }

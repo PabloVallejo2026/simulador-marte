@@ -17,6 +17,8 @@ export default function App() {
   const [rations, setRations] = useState(100);
   const [gameStatus, setGameStatus] = useState('playing');
   const [started, setStarted] = useState(false);
+  const [log, setLog] = useState([]);
+  const [endKind, setEndKind] = useState('');
   const [openInfo, setOpenInfo] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
   const [report, setReport] = useState(null);
@@ -60,6 +62,7 @@ export default function App() {
     // 1. Apagon: avanzar con mas de 100 kW es derrota (opcion A)
     if (currentLoad > energyMax) {
       setGameStatus('lost');
+      setEndKind('blackout');
       setEndReason('¡Apagón general! La base consumió más de 100 kW y el generador se apagó.');
       return;
     }
@@ -102,9 +105,18 @@ export default function App() {
       : { icon: '🥀', text: T.agricultureOff, change: change(T.food, newRations - rations) });
     setReport({ sol, label: solData.label, items });
 
+    // Registro de decisiones para el informe final (solo datos reales de la partida)
+    setLog([...log, {
+      sol,
+      storm: solarStorm,
+      shields: systems.shields.active,
+      agricultureOff: !systems.agriculture.active
+    }]);
+
     // 3. Derrota por salud o raciones en 0 %
     if (newHealth <= 0) {
       setGameStatus('lost');
+      setEndKind(radiationHit ? 'radiation' : 'oxygen');
       setEndReason(radiationHit
         ? 'La salud de la tripulación llegó a 0 %. La radiación de la tormenta solar entró en la base sin escudos.'
         : 'La salud de la tripulación llegó a 0 %. Sin Soporte Vital no hay oxígeno.');
@@ -112,6 +124,7 @@ export default function App() {
     }
     if (newRations <= 0) {
       setGameStatus('lost');
+      setEndKind('food');
       setEndReason('Las raciones llegaron a 0 %. Sin el Módulo Agrícola no hay comida.');
       return;
     }
@@ -119,6 +132,7 @@ export default function App() {
     // 4. Victoria al completar el Sol 10
     if (sol >= 10) {
       setGameStatus('won');
+      setEndKind('won');
       setEndReason('¡Misión cumplida! La tripulación sobrevivió 10 soles en Marte.');
       return;
     }
@@ -138,9 +152,19 @@ export default function App() {
     setGameStatus('playing');
     setEndReason('');
     setReport(null);
+    setLog([]);
+    setEndKind('');
   };
 
   const loadOver = currentLoad > energyMax;
+  const stats = {
+    sols: log.length,
+    storms: log.filter(e => e.storm).length,
+    protectedStorms: log.filter(e => e.storm && e.shields).length,
+    unprotected: log.filter(e => e.storm && !e.shields).length,
+    agriOff: log.filter(e => e.agricultureOff).length
+  };
+  const strategy = { won: T.stratWin, food: T.stratFood, radiation: T.stratRadiation, oxygen: T.stratOxygen, blackout: T.stratBlackout }[endKind];
   const alertLevel = (blackout || stormDanger) ? 'danger' : (solarStorm ? 'storm' : 'ok');
   const alertColors = {
     danger: { bg: '#fdecea', border: '#c0392b', title: '¡Atención!' },
@@ -275,7 +299,21 @@ export default function App() {
         ) : (
           <div className="end-panel" style={{ backgroundColor: gameStatus === 'won' ? '#1e8449' : '#922b21' }}>
             <h2>{gameStatus === 'won' ? '🏆 ¡Victoria!' : '💥 Misión fallida'}</h2>
+            <p className="end-title">{gameStatus === 'won' ? T.endWinTitle : T.endLoseTitle}</p>
             <p>{endReason}</p>
+            <div className="final-report">
+              <h3>📋 {T.reportFinalTitle}</h3>
+              <div className="stats">
+                <div><span>{T.statSols}</span><strong>{stats.sols} / 10</strong></div>
+                <div><span>{T.statStorms}</span><strong>{stats.storms}</strong></div>
+                <div><span>🛡️ {T.statProtected}</span><strong>{stats.protectedStorms}</strong></div>
+                <div><span>☢️ {T.statUnprotected}</span><strong>{stats.unprotected}</strong></div>
+                <div><span>🥀 {T.statAgriOff}</span><strong>{stats.agriOff}</strong></div>
+                <div><span>❤️🍽️ {T.statFinal}</span><strong>{health} % · {rations} %</strong></div>
+              </div>
+              {strategy && <p><strong>{T.strategyTitle}:</strong> {strategy}</p>}
+              <p><strong>{T.learningTitle}:</strong> {T.learning}</p>
+            </div>
             <div className="end-actions">
               <button onClick={restartMission}>🔄 Reiniciar misión</button>
               <button onClick={() => setShowCredits(!showCredits)}>Datos científicos / Créditos</button>
@@ -346,6 +384,12 @@ export default function App() {
         .credits-btn { background: #ecf0f1; border: 3px solid #2c3e50; border-radius: 12px; font-weight: 700; font-size: 13px; padding: 8px; cursor: pointer; max-width: 120px; }
         .end-panel { margin-top: 18px; padding: 22px; border-radius: 12px; border: 3px solid #2c3e50; text-align: center; color: #fff; }
         .end-panel h2 { margin: 0 0 8px; }
+        .end-title { font-weight: 800; font-size: 20px !important; }
+        .final-report { background: #fdfefe; color: #2c3e50; border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; text-align: left; }
+        .final-report h3 { margin: 0 0 8px; }
+        .final-report p { font-size: 15px !important; margin: 8px 0 0 !important; line-height: 1.4; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .stats div { display: flex; justify-content: space-between; gap: 8px; background: #ecf0f1; border-radius: 6px; padding: 6px 8px; font-size: 14px; }
         .end-panel p { font-size: 18px; margin: 0 0 16px; }
         .end-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .end-actions button, .credits button { padding: 10px 18px; font-size: 16px; font-weight: 700; border: none; border-radius: 8px; background: #ecf0f1; color: #2c3e50; cursor: pointer; }

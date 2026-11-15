@@ -34,6 +34,26 @@ export const TEXTOS = {
     cmeMany: 'eyecciones',
     stormOptionShields: 'Con escudos: la tripulación está protegida, pero tenés que apagar la agricultura (Comida −20 %).',
     stormOptionNoShields: 'Sin escudos: hay cosecha, pero la radiación baja la salud (Salud −40 %).'
+,
+    // --- Informe final: TEXTOS ORIGINALES de Soledad ---
+    endWinTitle: '¡Excelente trabajo, comandante! La misión continúa.',
+    endLoseTitle: 'La misión terminó. Revisá tus decisiones y volvé a intentarlo.',
+    learning: 'En Marte no podemos tenerlo todo. Cada decisión tiene consecuencias y cada recurso cuenta para mantener viva a nuestra tripulación.',
+    // --- Informe final: ADAPTACIÓN NUEVA (Claude), aprobada por el equipo ---
+    reportFinalTitle: 'Informe final de misión',
+    statSols: 'Soles completados',
+    statStorms: 'Tormentas enfrentadas',
+    statProtected: 'Protegidas con escudos',
+    statUnprotected: 'Sin escudos',
+    statAgriOff: 'Soles con agricultura apagada',
+    statFinal: 'Salud y comida finales',
+    strategyTitle: 'Tu estrategia',
+    learningTitle: 'Lo que aprendimos',
+    stratWin: 'Equilibraste protección y alimentos: elegiste cuándo proteger y cuándo arriesgar.',
+    stratFood: 'Protegiste mucho a la tripulación, pero la comida se agotó. A veces conviene arriesgar para mantener los cultivos.',
+    stratRadiation: 'La radiación afectó demasiado a la tripulación. Usar los escudos en más tormentas podría salvarla.',
+    stratOxygen: 'Sin soporte vital no hay aire respirable. Ese sistema nunca debería apagarse.',
+    stratBlackout: 'Superaste los 100 kW. Antes de avanzar, revisá que la energía alcance.'
   },
   en: {
     reportTitle: 'Sol Report',
@@ -62,6 +82,23 @@ export const TEXTOS = {
     cmeOne: 'ejection',
     cmeMany: 'ejections',
     stormOptionShields: 'With shields: the crew is protected, but you must turn off the farm (Food −20 %).',
-    stormOptionNoShields: 'Without shields: you get a harvest, but radiation lowers health (Health −40 %).'
+    stormOptionNoShields: 'Without shields: you get a harvest, but radiation lowers health (Health −40 %).',
+    endWinTitle: 'Excellent work, commander! The mission continues.',
+    endLoseTitle: 'The mission is over. Review your decisions and try again.',
+    learning: 'On Mars we can\'t have it all. Every decision has consequences and every resource counts to keep our crew alive.',
+    reportFinalTitle: 'Final mission report',
+    statSols: 'Sols completed',
+    statStorms: 'Storms faced',
+    statProtected: 'Protected with shields',
+    statUnprotected: 'Without shields',
+    statAgriOff: 'Sols with the farm turned off',
+    statFinal: 'Final health and food',
+    strategyTitle: 'Your strategy',
+    learningTitle: 'What we learned',
+    stratWin: 'You balanced protection and food: you chose when to protect and when to take the risk.',
+    stratFood: 'You protected the crew a lot, but the food ran out. Sometimes it is worth taking a risk to keep the crops.',
+    stratRadiation: 'Radiation hurt the crew too much. Using the shields in more storms could save them.',
+    stratOxygen: 'Without life support there is no breathable air. That system should never be turned off.',
+    stratBlackout: 'You went over 100 kW. Before moving on, check that there is enough energy.'
   }
 };

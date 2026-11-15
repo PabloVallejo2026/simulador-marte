@@ -26,6 +26,7 @@ export const TEXTOS = {
     introEnergy: 'Tu generador produce 100 kW, pero los tres módulos necesitan 150 kW. No podés encenderlo todo.',
     introStorms: 'Durante la misión llegarán varias tormentas solares seguidas, según datos reales de NASA. Si encendés los escudos, tenés que apagar la agricultura y la comida baja. No vas a poder bloquearlas todas: elegí cuándo proteger y cuándo arriesgar.',
     introGoal: 'Objetivo: llegar al Sol 10 con salud y comida por encima de 0 %.',
+        introSol: 'Un sol es un día en Marte (dura un poco más que un día en la Tierra).',
     startButton: 'COMENZAR MISIÓN ➜',
     // --- Alerta de tormenta: ADAPTACIÓN NUEVA (Claude), pendiente de revisión de Soledad ---
     // Los valores (-20 % y -40 %) son los de las Reglas v2.
@@ -121,6 +122,7 @@ export const TEXTOS = {
     introEnergy: 'Your generator produces 100 kW, but the three modules need 150 kW. You can\'t turn everything on.',
     introStorms: 'During the mission, several solar storms will arrive in a row, based on real NASA data. If you turn on the shields, you must turn off the farm and food goes down. You won\'t be able to block them all: choose when to protect and when to take the risk.',
     introGoal: 'Goal: reach Sol 10 with health and food above 0 %.',
+        introSol: 'A sol is a day on Mars (it lasts a little longer than a day on Earth).',
     startButton: 'START MISSION ➜',
     stormAlertTitle: 'A solar storm arrives today!',
     stormAlertData: 'Real NASA DONKI data: {n} coronal mass {cme} estimated to reach Mars on this day.',

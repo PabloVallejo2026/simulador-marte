@@ -202,6 +202,7 @@ export default function App() {
           <p>⚡ {T.introEnergy}</p>
           <p>☀️ {T.introStorms}</p>
           <p className="intro-goal">🎯 {T.introGoal}</p>
+                    <p>🪐 {T.introSol}</p>
           <p className="intro-phrase">{T.introPhrase}</p>
           <button className="next-btn" onClick={() => setStarted(true)}>{T.startButton}</button>
         </div>

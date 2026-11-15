@@ -1,22 +1,87 @@
-# Proyecto: Simulador de Supervivencia Marciana 🚀
-**NASA Space Apps Challenge 2026**
+# Mission Mars: Survival Base! 🚀
 
-Este repositorio contiene el prototipo jugable para el desafío de creación de juegos educativos enfocados en los "trade-offs" (compensaciones) de ingeniería para la supervivencia en el espacio profundo.
+**NASA Space Apps Challenge 2026 – Challenge: _Build a Junior Astronaut Mission Trainer_**
+**Team:** Los Lunáticos Terrícolas (The Lunatic Earthlings) – Santiago del Estero, Argentina
 
-## Arquitectura y Lógica (La "Manta Corta")
-El juego está inspirado en *Oxygen Not Included*. La base marciana tiene un generador que produce un máximo de **100 kW**.
-- **Soporte Vital (40 kW):** Imprescindible. Si se apaga mucho tiempo, se pierde la partida.
-- **Módulo Agrícola (50 kW):** Provee comida.
-- **Escudos (60 kW):** Protegen de la radiación.
+▶️ **Play it here:** https://simulador-marte.vercel.app/
+No sign-in required. Works on computers, netbooks and tablets.
 
-**El conflicto:** 40 + 50 + 60 = 150 kW. No se puede tener todo encendido.
-Cuando se detecta una tormenta solar, el jugador debe decidir qué sistema sacrificar (generalmente la agricultura) para encender los escudos sin provocar un apagón masivo.
+---
 
-## Integración con APIs de la NASA
-- **DONKI (Space Weather Database):** Utilizamos datos de Eyecciones de Masa Coronal (CME) para disparar los eventos de tormenta solar en el juego.
-- **OSDR / RadLab:** (Planificado) Reflejar los daños por dosis de radiación en la salud de la tripulación.
+## What is it?
 
-## Cómo correr el proyecto localmente
-1. Instalar dependencias: `npm install`
-2. Correr entorno de desarrollo: `npm run dev`
-3. Abrir en el navegador (usualmente `http://localhost:5173`)
+An educational web game for kids aged 7 to 12. The player is the commander of a base on Mars and must keep the crew alive for **10 sols** (Martian days) by managing limited energy.
+
+**The core dilemma (trade-off):** the generator produces **100 kW**, but the three modules need **150 kW**:
+
+| Module | Energy | If it is OFF |
+|---|---|---|
+| Life Support | 40 kW | Health −50 % per sol |
+| Farm | 50 kW | Food −20 % per sol (ON: +10 %, max 100 %) |
+| Radiation Shields | 60 kW | During a solar storm: Health −40 % per sol |
+
+You can't turn everything on. During a solar storm, turning on the shields means turning off the farm. There are **five storms in a row**, so the player can't block them all: they must choose when to protect the crew and when to take the risk.
+
+**Win:** reach the end of Sol 10 with health and food above 0 %.
+**Lose:** health or food reaches 0 %, or you move on to the next sol with more than 100 kW (blackout).
+
+**Learning goal:** _On Mars we can't have it all. Every decision has consequences and every resource counts to keep our crew alive._
+
+## Features
+
+- Start screen with the mission briefing.
+- Storm alert that shows the cost of each option (shields vs. no shields).
+- **Sol Report** after every turn: what happened, why, and the real change in each resource.
+- **Final Mission Report:** sols completed, storms faced, storms protected or unprotected, sols with the farm turned off, final health and food, a strategy tip, and the key lesson.
+- Info buttons (ⓘ) that work by tap or click.
+- "Scientific data / Credits" panel.
+
+## NASA Data Used
+
+| Source | Link | Data used | Role in the game |
+|---|---|---|---|
+| **DONKI** – Space Weather Database Of Notifications, Knowledge, Information (CCMC, NASA Goddard), via NASA Open APIs | https://ccmc.gsfc.nasa.gov/tools/DONKI · `https://api.nasa.gov/DONKI/CME?startDate=2024-05-14&endDate=2024-05-23` | 63 Coronal Mass Ejections (CMEs) recorded from May 14 to 23, 2024, and their WSA-ENLIL model analyses | Each sol is a real day of that period. A sol has a solar storm when at least one CME has an estimated arrival at Mars that day: 16 CMEs in total, on Sols 3 to 7 (1, 6, 2, 4 and 3 CMEs). The alert shows the real date and the number of CMEs. |
+
+**Method:** for each CME we used the analyses marked "most accurate" and counted only direct arrivals at Mars (glancing blows were not counted). Each CME is assigned to the day of its first estimated arrival. The data was downloaded once and stored in `src/donki.js`, so the game does not depend on a live API and exposes no API key.
+
+**Scientific honesty:**
+- CME arrivals at Mars are **model estimates (WSA-ENLIL), not measurements on Mars**.
+- Energy consumption and the damage to health and food are **simplified game values**, not NASA measurements.
+- A solar storm in the game does not represent a specific radiation dose.
+
+**Background reference:** NASA, _"NASA Watches Mars Light Up During Epic Solar Storm"_ (June 2024), on the May 2024 solar events observed at Mars by Curiosity and MAVEN: https://www.nasa.gov/solar-system/planets/mars/nasa-watches-mars-light-up-during-epic-solar-storm
+
+## AI Tools Used
+
+| Tool | Task | Files or elements affected |
+|---|---|---|
+| Claude (Anthropic) | Code development and review, DONKI data processing, English translation drafts, technical guidance | `src/App.jsx`, `src/donki.js`, `src/textos.js`, this README |
+| ChatGPT (OpenAI) | Planning, cross-checking and auditing | Project plan and code review |
+| Gemini Pro (Google) | Initial React prototype and interface sketch (Franco) | Original prototype (tag `v0-franco`), interface sketch |
+| [SOLEDAD: name of the AI tool used to generate the images] | AI-generated images for the demo video (Soledad) | Demo video images |
+
+- Spanish educational texts: written by the team (Soledad). Labeled in `src/textos.js` as originals or as adaptations.
+- English texts: AI draft translation, reviewed by the team.
+- AI-generated images are labeled according to the official instructions.
+- Canva and CapCut were used only as video editors (layout, text and manual animations), without AI features. [SOLEDAD: update this line if any AI feature was used, such as automatic captions, AI voice or AI effects.]
+
+## Team
+
+- **Pablo Vallejo** – coordination, AI-assisted development, testing, documentation
+- **Franco Lescano** – game design, original React prototype, Rules v2, interface sketch
+- **Soledad Rumiche** – educational design, narrative, texts, presentation
+
+## Run locally
+
+Requires Node.js.
+
+```bash
+npm install
+npm run dev
+```
+
+Then open http://localhost:5173
+
+## Tech
+
+React 18 + Vite 5. Icons: lucide-react. Deployed on Vercel.

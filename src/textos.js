@@ -26,7 +26,13 @@ export const TEXTOS = {
     introEnergy: 'Tu generador produce 100 kW, pero los tres módulos necesitan 150 kW. No podés encenderlo todo.',
     introStorms: 'Durante la misión llegarán varias tormentas solares seguidas, según datos reales de NASA. Si encendés los escudos, tenés que apagar la agricultura y la comida baja. No vas a poder bloquearlas todas: elegí cuándo proteger y cuándo arriesgar.',
     introGoal: 'Objetivo: llegar al Sol 10 con salud y comida por encima de 0 %.',
-        introSol: 'Un sol es un día en Marte (dura un poco más que un día en la Tierra).',
+    introSol: 'Un sol es un día en Marte (dura un poco más que un día en la Tierra).',
+    // --- Simplificación tras la prueba con un chico (ADAPTACIÓN NUEVA, Claude) ---
+    introShortGoal: 'Sobreviví 10 soles (días en Marte) cuidando la energía, la salud y la comida.',
+    howToTitle: 'Cómo jugar',
+    howTo1: 'Mirá la barra de ENERGÍA: no puede pasar de 100 kW.',
+    howTo2: 'Tocá ENCENDIDO / APAGADO en cada módulo para elegir qué funciona.',
+    howTo3: 'Tocá AVANZAR AL SIGUIENTE SOL y mirá qué pasó.',
     startButton: 'COMENZAR MISIÓN ➜',
     // --- Alerta de tormenta: ADAPTACIÓN NUEVA (Claude), pendiente de revisión de Soledad ---
     // Los valores (-20 % y -40 %) son los de las Reglas v2.
@@ -99,6 +105,8 @@ export const TEXTOS = {
     creditsPeriod: '14 al 23 de mayo de 2024',
     creditsModel: 'Cada Sol del juego corresponde a un día de ese período. Las llegadas a Marte de las eyecciones de masa coronal son estimaciones del modelo WSA-ENLIL, no mediciones en Marte.',
     creditsSimplified: 'Los consumos de energía y los daños a la salud y a las raciones son valores simplificados para el juego.',
+    creditsBackground: 'Fondo: «Water Enters Jezero Crater Billions of Years Ago (Artist\'s Concept)», PIA26207 — ilustración artística, NASA/JPL-Caltech.',
+    creditsAI: 'Ilustraciones de los módulos: generadas con IA (Gemini). Textos en inglés: borrador traducido con IA (Claude), revisado por el equipo.',
     close: 'Cerrar'
   },
   en: {
@@ -122,7 +130,12 @@ export const TEXTOS = {
     introEnergy: 'Your generator produces 100 kW, but the three modules need 150 kW. You can\'t turn everything on.',
     introStorms: 'During the mission, several solar storms will arrive in a row, based on real NASA data. If you turn on the shields, you must turn off the farm and food goes down. You won\'t be able to block them all: choose when to protect and when to take the risk.',
     introGoal: 'Goal: reach Sol 10 with health and food above 0 %.',
-        introSol: 'A sol is a day on Mars (it lasts a little longer than a day on Earth).',
+    introSol: 'A sol is a day on Mars (it lasts a little longer than a day on Earth).',
+    introShortGoal: 'Survive 10 sols (days on Mars) by taking care of energy, health and food.',
+    howToTitle: 'How to play',
+    howTo1: 'Look at the ENERGY bar: it can\'t go over 100 kW.',
+    howTo2: 'Tap ON / OFF on each module to choose what runs.',
+    howTo3: 'Tap GO TO THE NEXT SOL and see what happened.',
     startButton: 'START MISSION ➜',
     stormAlertTitle: 'A solar storm arrives today!',
     stormAlertData: 'Real NASA DONKI data: {n} coronal mass {cme} estimated to reach Mars on this day.',
@@ -188,6 +201,8 @@ export const TEXTOS = {
     creditsPeriod: 'May 14 to 23, 2024',
     creditsModel: 'Each Sol in the game is one day of that period. The arrivals of coronal mass ejections at Mars are estimates from the WSA-ENLIL model, not measurements on Mars.',
     creditsSimplified: 'Energy use and the damage to health and food are simplified game values.',
+    creditsBackground: 'Background: "Water Enters Jezero Crater Billions of Years Ago (Artist\'s Concept)", PIA26207 — artist\'s concept, NASA/JPL-Caltech.',
+    creditsAI: 'Module illustrations: AI-generated (Gemini). English texts: AI draft translation (Claude), reviewed by the team.',
     close: 'Close'
   }
 };

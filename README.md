@@ -49,6 +49,8 @@ You can't turn everything on. During a solar storm, turning on the shields means
 - Energy consumption and the damage to health and food are **simplified game values**, not NASA measurements.
 - A solar storm in the game does not represent a specific radiation dose.
 
+**Game background image:** _"Water Enters Jezero Crater Billions of Years Ago (Artist's Concept)"_, PIA26207, NASA/JPL-Caltech (artist's concept, not a photograph): https://science.nasa.gov/photojournal/water-enters-jezero-crater-billions-of-years-ago-artists-concept/
+
 **Background reference:** NASA, _"NASA Watches Mars Light Up During Epic Solar Storm"_ (June 2024), on the May 2024 solar events observed at Mars by Curiosity and MAVEN: https://www.nasa.gov/solar-system/planets/mars/nasa-watches-mars-light-up-during-epic-solar-storm
 
 ## AI Tools Used
@@ -58,12 +60,12 @@ You can't turn everything on. During a solar storm, turning on the shields means
 | Claude (Anthropic) | Code development and review, DONKI data processing, English translation drafts, technical guidance | `src/App.jsx`, `src/donki.js`, `src/textos.js`, this README |
 | ChatGPT (OpenAI) | Planning, cross-checking and auditing | Project plan and code review |
 | Gemini Pro (Google) | Initial React prototype and interface sketch (Franco) | Original prototype (tag `v0-franco`), interface sketch |
-| [SOLEDAD: name of the AI tool used to generate the images] | AI-generated images for the demo video (Soledad) | Demo video images |
+| Gemini (Google) | AI-generated images for the demo video (Soledad) and the three module illustrations in the game (Franco) | Demo video images, `public/img/soporte-vital.jpg`, `public/img/agricultura.jpg`, `public/img/escudos.jpg` |
 
 - Spanish educational texts: written by the team (Soledad). Labeled in `src/textos.js` as originals or as adaptations.
 - English texts: AI draft translation, reviewed by the team.
 - AI-generated images are labeled according to the official instructions.
-- Canva and CapCut were used only as video editors (layout, text and manual animations), without AI features. [SOLEDAD: update this line if any AI feature was used, such as automatic captions, AI voice or AI effects.]
+- Canva Pro was used only as a video editor (layout, text, manual animations and Canva design elements), without AI features.
 
 ## Team
 

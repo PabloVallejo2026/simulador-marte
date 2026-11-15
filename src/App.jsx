@@ -176,8 +176,8 @@ export default function App() {
   const strategy = { won: T.stratWin, food: T.stratFood, radiation: T.stratRadiation, oxygen: T.stratOxygen, blackout: T.stratBlackout }[endKind];
   const alertLevel = (blackout || stormDanger) ? 'danger' : (solarStorm ? 'storm' : 'ok');
   const alertColors = {
-    danger: { bg: '#fdecea', border: '#c0392b', title: T.alertDanger },
-    storm: { bg: '#fff4d6', border: '#e67e22', title: T.alertStorm },
+    danger: { bg: '#ffd6d1', border: '#d90000', title: T.alertDanger },
+    storm: { bg: '#ffd6d1', border: '#d90000', title: T.alertStorm },
     ok: { bg: '#fff8e7', border: '#d4a017', title: T.alertOk }
   }[alertLevel];
 
@@ -199,15 +199,12 @@ export default function App() {
           <h1>{T.introTitle}</h1>
           <p className="intro-question">{T.introQuestion}</p>
           <p>{T.introText}</p>
-          <p>⚡ {T.introEnergy}</p>
-          <p>☀️ {T.introStorms}</p>
-          <p className="intro-goal">🎯 {T.introGoal}</p>
-                    <p>🪐 {T.introSol}</p>
+          <p className="intro-goal">🎯 {T.introShortGoal}</p>
           <p className="intro-phrase">{T.introPhrase}</p>
           <button className="next-btn" onClick={() => setStarted(true)}>{T.startButton}</button>
         </div>
         <style>{`
-          .mars-bg { min-height: 100vh; background: linear-gradient(180deg, #e8916b 0%, #c8553d 45%, #8e3b2a 100%); padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
+          .mars-bg { min-height: 100vh; background: linear-gradient(rgba(120, 45, 25, 0.35), rgba(60, 20, 10, 0.55)), url('/img/fondo-marte.jpg') center / cover fixed, #8e3b2a; padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
           .intro { max-width: 720px; margin: 30px auto; background: #fdfefe; border: 4px solid #2c3e50; border-radius: 16px; padding: 24px; text-align: center; }
           .intro h1 { color: #c0392b; font-size: 30px; margin: 0 0 8px; }
           .intro p { font-size: 17px; line-height: 1.45; margin: 10px 0; }
@@ -230,16 +227,24 @@ export default function App() {
               <div className="title-tag">{T.titleMain} <span>{T.titleSub}</span></div>
               {langToggle}
             </div>
-            <div className="alert-box" style={{ backgroundColor: alertColors.bg, borderColor: alertColors.border }}>
+            <div className={`alert-box ${alertLevel !== 'ok' ? 'alert-pulse' : ''}`} style={{ backgroundColor: alertColors.bg, borderColor: alertColors.border }}>
               <div className="alert-title">
                 {alertLevel === 'ok' ? <Info size={20} /> : <AlertTriangle size={20} color={alertColors.border} />}
                 {alertColors.title}
               </div>
               {message === 'storm' ? (
                 <div className="storm-alert">
-                  <p><strong>{T.stormAlertTitle}</strong> {stormData}</p>
+                  <p className="storm-title">{T.stormAlertTitle}</p>
                   <p>🛡️ {T.stormOptionShields}</p>
                   <p>☢️ {T.stormOptionNoShields}</p>
+                  <p className="storm-data">{stormData}</p>
+                </div>
+              ) : (sol === 1 && !report && message === 'normal') ? (
+                <div className="howto">
+                  <p className="storm-title">{T.howToTitle}</p>
+                  <p>1️⃣ {T.howTo1}</p>
+                  <p>2️⃣ {T.howTo2}</p>
+                  <p>3️⃣ {T.howTo3}</p>
                 </div>
               ) : (
                 <p>{messageText}</p>
@@ -282,9 +287,7 @@ export default function App() {
           {Object.entries(systems).map(([key, sys]) => (
             <div key={key} className="module">
               <h3>{modNames[key].toUpperCase()}</h3>
-              <div className={`module-art art-${key}`}>
-                <sys.icon size={64} />
-              </div>
+              <div className={`module-art art-${key} ${sys.active ? '' : 'art-off'}`} />
               <div className="module-kw">-{sys.cost} kW</div>
               <div className="module-actions">
                 <button
@@ -344,13 +347,18 @@ export default function App() {
               {' '}{T.creditsModel}
             </p>
             <p>{T.creditsSimplified}</p>
+            <p>
+              {T.creditsBackground}{' '}
+              <a href="https://science.nasa.gov/photojournal/water-enters-jezero-crater-billions-of-years-ago-artists-concept/" target="_blank" rel="noreferrer">NASA Photojournal</a>
+            </p>
+            <p>{T.creditsAI}</p>
             <button onClick={() => setShowCredits(false)}>{T.close}</button>
           </div>
         )}
       </div>
 
       <style>{`
-        .mars-bg { min-height: 100vh; background: linear-gradient(180deg, #e8916b 0%, #c8553d 45%, #8e3b2a 100%); padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
+        .mars-bg { min-height: 100vh; background: linear-gradient(rgba(120, 45, 25, 0.35), rgba(60, 20, 10, 0.55)), url('/img/fondo-marte.jpg') center / cover fixed, #8e3b2a; padding: 16px; box-sizing: border-box; font-family: system-ui, sans-serif; color: #2c3e50; }
         .game { max-width: 1000px; margin: 0 auto; }
         .top { display: grid; grid-template-columns: 1.1fr 1.3fr 0.7fr; gap: 14px; align-items: start; }
         .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -359,7 +367,15 @@ export default function App() {
         .title-tag span { font-size: 15px; font-weight: 600; }
         .alert-box { border: 4px solid; border-radius: 10px; padding: 10px 14px; box-shadow: 0 3px 0 rgba(0,0,0,0.2); }
         .alert-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
-        .storm-alert p { margin: 6px 0 0; }
+        .storm-alert p, .howto p { margin: 6px 0 0; }
+        .alert-pulse { border-width: 5px; animation: alertPulse 1.2s ease-in-out infinite; }
+        @keyframes alertPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(217, 0, 0, 0.0), 0 3px 0 rgba(0,0,0,0.2); }
+          50% { box-shadow: 0 0 0 8px rgba(217, 0, 0, 0.45), 0 3px 0 rgba(0,0,0,0.2); }
+        }
+        @media (prefers-reduced-motion: reduce) { .alert-pulse { animation: none; } }
+        .storm-title { font-size: 18px !important; font-weight: 900 !important; }
+        .storm-data { font-size: 12px !important; font-weight: 500 !important; color: #555; }
         .alert-box p { margin: 6px 0 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
         .bars { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; }
         .bar-row { display: flex; align-items: center; }
@@ -382,10 +398,12 @@ export default function App() {
         .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
         .module { background: #dfe6e9; border: 3px solid #2c3e50; border-radius: 12px; padding: 10px; text-align: center; position: relative; }
         .module h3 { margin: 0 0 8px; font-size: 16px; font-weight: 900; }
-        .module-art { height: 110px; border: 3px solid #2c3e50; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; }
-        .art-lifeSupport { background: linear-gradient(135deg, #5dade2, #2e86c1); }
-        .art-agriculture { background: linear-gradient(135deg, #a569bd, #58d68d); }
-        .art-shields { background: linear-gradient(135deg, #cd6155, #85c1e9); }
+        .module-art { height: 130px; border: 3px solid #2c3e50; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; }
+        .module-art { background-size: cover; background-position: left center; transition: filter 0.3s; }
+        .art-lifeSupport { background-image: url('/img/soporte-vital.jpg'); }
+        .art-agriculture { background-image: url('/img/agricultura.jpg'); }
+        .art-shields { background-image: url('/img/escudos.jpg'); }
+        .art-off { filter: grayscale(1) brightness(0.6); }
         .module-kw { font-size: 24px; font-weight: 900; margin: 8px 0; }
         .module-actions { display: flex; align-items: center; justify-content: center; gap: 8px; }
         .state-btn { border: 3px solid #2c3e50; border-radius: 10px; color: #fff; font-size: 20px; font-weight: 900; padding: 6px 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; min-width: 150px; }

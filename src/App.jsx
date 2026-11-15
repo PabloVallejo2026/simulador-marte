@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Wind, Sprout, Shield, Sun, Info, Zap, Heart } from 'lucide-react';
 import { DONKI_SOLS, DONKI_SOURCE } from './donki.js';
+import { TEXTOS } from './textos.js';
 
 export default function App() {
   const [sol, setSol] = useState(1);
@@ -17,6 +18,9 @@ export default function App() {
   const [gameStatus, setGameStatus] = useState('playing');
   const [openInfo, setOpenInfo] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
+  const [report, setReport] = useState(null);
+  const lang = 'es'; // preparado para el selector Español / English
+  const T = TEXTOS[lang];
   const [endReason, setEndReason] = useState('');
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
@@ -63,6 +67,7 @@ export default function App() {
     if (!systems.lifeSupport.active) {
       newHealth = Math.max(0, newHealth - 50);
     }
+    const healthAfterLifeSupport = newHealth;
     if (systems.agriculture.active) {
       newRations = Math.min(100, newRations + 10);
     } else {
@@ -75,6 +80,24 @@ export default function App() {
     }
     setHealth(newHealth);
     setRations(newRations);
+
+    // Reporte del Sol: usa los cambios realmente calculados arriba
+    const change = (label, d) => d === 0 ? `${label}: ${T.noChange}` : `${label} ${d > 0 ? '+' : ''}${d} %`;
+    const items = [];
+    if (solarStorm) {
+      items.push(systems.shields.active
+        ? { icon: '🛡️', text: T.stormShields, change: T.noRadiationDamage }
+        : { icon: '☢️', text: T.stormNoShields, change: change(T.health, newHealth - healthAfterLifeSupport) });
+    } else {
+      items.push({ icon: '🌤️', text: T.calmDay, change: '' });
+    }
+    if (!systems.lifeSupport.active) {
+      items.push({ icon: '💨', text: T.lifeSupportOff, change: change(T.health, healthAfterLifeSupport - health) });
+    }
+    items.push(systems.agriculture.active
+      ? { icon: '🌱', text: T.agricultureOn, change: change(T.food, newRations - rations) }
+      : { icon: '🥀', text: T.agricultureOff, change: change(T.food, newRations - rations) });
+    setReport({ sol, label: solData.label, items });
 
     // 3. Derrota por salud o raciones en 0 %
     if (newHealth <= 0) {
@@ -111,6 +134,7 @@ export default function App() {
     }));
     setGameStatus('playing');
     setEndReason('');
+    setReport(null);
   };
 
   const loadOver = currentLoad > energyMax;
@@ -162,6 +186,20 @@ export default function App() {
             {solarStorm && <div className="storm-chip">☀️ Tormenta solar</div>}
           </div>
         </div>
+
+        {report && (
+          <div className="report">
+            <div className="report-title">📋 {T.reportTitle} {report.sol} · {report.label}</div>
+            {report.items.map((it, i) => (
+              <div key={i} className="report-item">
+                <span className="report-icon">{it.icon}</span>
+                <span className="report-text">{it.text}</span>
+                {it.change && <span className="report-change">{it.change}</span>}
+              </div>
+            ))}
+            <div className="report-note">{T.simplified}</div>
+          </div>
+        )}
 
         <div className="modules">
           {Object.entries(systems).map(([key, sys]) => (
@@ -241,6 +279,13 @@ export default function App() {
         .sol-big { font-size: 40px; font-weight: 900; line-height: 1; }
         .sol-date { font-size: 13px; margin-top: 4px; color: #555; }
         .storm-chip { margin-top: 6px; background: #e67e22; color: #fff; font-weight: 800; font-size: 13px; border-radius: 6px; padding: 3px 6px; }
+        .report { margin-top: 16px; background: #fdfefe; border: 3px solid #2c3e50; border-radius: 12px; padding: 12px 14px; }
+        .report-title { font-weight: 900; font-size: 17px; margin-bottom: 8px; }
+        .report-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #d5dbdb; }
+        .report-icon { font-size: 22px; flex-shrink: 0; }
+        .report-text { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.35; }
+        .report-change { flex-shrink: 0; background: #2c3e50; color: #fff; font-weight: 800; font-size: 14px; border-radius: 6px; padding: 4px 8px; white-space: nowrap; }
+        .report-note { margin-top: 6px; font-size: 12px; color: #7f8c8d; }
         .modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }
         .module { background: #dfe6e9; border: 3px solid #2c3e50; border-radius: 12px; padding: 10px; text-align: center; position: relative; }
         .module h3 { margin: 0 0 8px; font-size: 16px; font-weight: 900; }

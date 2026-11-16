@@ -287,7 +287,9 @@ export default function App() {
           {Object.entries(systems).map(([key, sys]) => (
             <div key={key} className="module">
               <h3>{modNames[key].toUpperCase()}</h3>
-              <div className={`module-art art-${key} ${sys.active ? '' : 'art-off'}`} />
+              <div className={`module-art art-${key} ${sys.active ? '' : 'art-off'}`}>
+                <span className="ai-mark">AI-generated image (Gemini)</span>
+              </div>
               <div className="module-kw">-{sys.cost} kW</div>
               <div className="module-actions">
                 <button
@@ -404,6 +406,8 @@ export default function App() {
         .art-agriculture { background-image: url('/img/agricultura.jpg'); }
         .art-shields { background-image: url('/img/escudos.jpg'); }
         .art-off { filter: grayscale(1) brightness(0.6); }
+        .module-art { position: relative; }
+        .ai-mark { position: absolute; right: 4px; bottom: 4px; background: rgba(0,0,0,0.65); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 4px; }
         .module-kw { font-size: 24px; font-weight: 900; margin: 8px 0; }
         .module-actions { display: flex; align-items: center; justify-content: center; gap: 8px; }
         .state-btn { border: 3px solid #2c3e50; border-radius: 10px; color: #fff; font-size: 20px; font-weight: 900; padding: 6px 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; min-width: 150px; }

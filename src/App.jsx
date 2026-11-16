@@ -22,7 +22,7 @@ export default function App() {
   const [openInfo, setOpenInfo] = useState(null);
   const [showCredits, setShowCredits] = useState(false);
   const [report, setReport] = useState(null);
-  const [lang, setLang] = useState('es');
+  const [lang, setLang] = useState('en');
   const T = TEXTOS[lang];
 
   const currentLoad = Object.values(systems).reduce((acc, sys) => sys.active ? acc + sys.cost : acc, 0);
